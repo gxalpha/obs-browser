@@ -105,11 +105,15 @@ void BrowserApp::OnBeforeCommandLineProcessing(
 }
 
 std::vector<std::string> exposedFunctions = {
-	"getControlLevel",   "getCurrentScene",  "getStatus",
-	"startRecording",    "stopRecording",    "startStreaming",
-	"stopStreaming",     "pauseRecording",   "unpauseRecording",
-	"startReplayBuffer", "stopReplayBuffer", "saveReplayBuffer",
-	"startVirtualcam",   "stopVirtualcam"};
+	"getControlLevel",   "getCurrentScene",     "getStatus",
+	"startRecording",    "stopRecording",       "startStreaming",
+	"stopStreaming",     "pauseRecording",      "unpauseRecording",
+	"startReplayBuffer", "stopReplayBuffer",    "saveReplayBuffer",
+	"startVirtualcam",   "stopVirtualcam",      "getScenes",
+	"setScene",          "getTransitions",      "getCurrentTransition",
+	"setTransition",     "getProfiles",         "getCurrentProfile",
+	"setProfile",        "getSceneCollections", "getCurrentSceneCollection",
+	"setSceneCollection"};
 
 void BrowserApp::OnContextCreated(CefRefPtr<CefBrowser> browser,
 				  CefRefPtr<CefFrame>,

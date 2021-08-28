@@ -129,19 +129,84 @@ bool BrowserClient::OnProcessMessageReceived(
 			obs_frontend_start_virtualcam();
 		} else if (name == "stopVirtualcam") {
 			obs_frontend_stop_virtualcam();
+		} else if (name == "setProfile") {
+			obs_frontend_set_current_profile(
+				arguments->GetString(1).ToString().c_str());
+		} else if (name == "setSceneCollection") {
+			obs_frontend_set_current_scene_collection(
+				arguments->GetString(1).ToString().c_str());
 		}
 	case ControlLevel::Advanced:
 		if (name == "startReplayBuffer") {
 			obs_frontend_replay_buffer_start();
 		} else if (name == "stopReplayBuffer") {
 			obs_frontend_replay_buffer_stop();
+		} else if (name == "setScene") {
+			const std::string scene_name =
+				arguments->GetString(1).ToString();
+			obs_source_t *source =
+				obs_get_source_by_name(scene_name.c_str());
+			if (!source) {
+				blog(LOG_WARNING,
+				     "Browser source '%s' tried to switch to scene '%s' which doesn't exist",
+				     obs_source_get_name(bs->source),
+				     scene_name.c_str());
+			} else if (!obs_source_is_scene(source)) {
+				blog(LOG_WARNING,
+				     "Browser source '%s' tried to switch to '%s' which isn't a scene",
+				     obs_source_get_name(bs->source),
+				     scene_name.c_str());
+				obs_source_release(source);
+			} else {
+				obs_frontend_set_current_scene(source);
+				obs_source_release(source);
+			}
+		} else if (name == "setTransition") {
+			// A little hacky, but it doesn't appear like you can get a transition by name
+			auto cb = [](void *data, obs_source_t *source) {
+				char *name = (char *)data;
+				if (obs_source_get_type(source) !=
+				    OBS_SOURCE_TYPE_TRANSITION)
+					return true;
+
+				if (strcmp(obs_source_get_name(source), name) !=
+				    0)
+					return true;
+
+				obs_frontend_set_current_transition(source);
+				return false;
+			};
+			obs_enum_all_sources(cb, (void *)arguments->GetString(1)
+							 .ToString()
+							 .c_str());
 		}
 	case ControlLevel::Basic:
 		if (name == "saveReplayBuffer") {
 			obs_frontend_replay_buffer_save();
 		}
 	case ControlLevel::ReadOnly:
-		if (name == "getCurrentScene") {
+		if (name == "getStatus") {
+			json = Json::object{
+				{"recording", obs_frontend_recording_active()},
+				{"streaming", obs_frontend_streaming_active()},
+				{"recordingPaused",
+				 obs_frontend_recording_paused()},
+				{"replaybuffer",
+				 obs_frontend_replay_buffer_active()},
+				{"virtualcam",
+				 obs_frontend_virtualcam_active()}};
+		} else if (name == "getScenes") {
+			struct obs_frontend_source_list list = {{{0}}};
+			obs_frontend_get_scenes(&list);
+			std::vector<char *> scenes_vector;
+			for (size_t i = 0; i < list.sources.num; i++) {
+				obs_source_t *source = list.sources.array[i];
+				scenes_vector.push_back(
+					(char *)obs_source_get_name(source));
+			}
+			json = Json::array{scenes_vector};
+			obs_frontend_source_list_free(&list);
+		} else if (name == "getCurrentScene") {
 			OBSSource current_scene =
 				obs_frontend_get_current_scene();
 			obs_source_release(current_scene);
@@ -159,16 +224,52 @@ bool BrowserClient::OnProcessMessageReceived(
 				 (int)obs_source_get_width(current_scene)},
 				{"height",
 				 (int)obs_source_get_height(current_scene)}};
-		} else if (name == "getStatus") {
-			json = Json::object{
-				{"recording", obs_frontend_recording_active()},
-				{"streaming", obs_frontend_streaming_active()},
-				{"recordingPaused",
-				 obs_frontend_recording_paused()},
-				{"replaybuffer",
-				 obs_frontend_replay_buffer_active()},
-				{"virtualcam",
-				 obs_frontend_virtualcam_active()}};
+		} else if (name == "getTransitions") {
+			struct obs_frontend_source_list list = {{{0}}};
+			obs_frontend_get_transitions(&list);
+			std::vector<char *> transitions_vector;
+			for (size_t i = 0; i < list.sources.num; i++) {
+				obs_source_t *source = list.sources.array[i];
+				transitions_vector.push_back(
+					(char *)obs_source_get_name(source));
+			}
+			json = Json::array{transitions_vector};
+			obs_frontend_source_list_free(&list);
+		} else if (name == "getCurrentTransition") {
+			obs_source_t *source =
+				obs_frontend_get_current_transition();
+			json = Json(obs_source_get_name(source));
+			obs_source_release(source);
+		} else if (name == "getProfiles") {
+			char **profiles = obs_frontend_get_profiles();
+			char **profile = profiles;
+			std::vector<char *> profiles_vector;
+			while (profile && *profile) {
+				profiles_vector.push_back(*profile);
+				profile++;
+			}
+			bfree(profiles);
+			json = Json::array{profiles_vector};
+		} else if (name == "getCurrentProfile") {
+			char *profile = obs_frontend_get_current_profile();
+			json = Json(profile);
+			bfree(profile);
+		} else if (name == "getSceneCollections") {
+			char **collections =
+				obs_frontend_get_scene_collections();
+			char **collection = collections;
+			std::vector<char *> collections_vector;
+			while (collection && *collection) {
+				collections_vector.push_back(*collection);
+				collection++;
+			}
+			bfree(collections);
+			json = Json::array{collections_vector};
+		} else if (name == "getCurrentSceneCollection") {
+			char *collection =
+				obs_frontend_get_current_scene_collection();
+			json = Json(collection);
+			bfree(collection);
 		}
 	case ControlLevel::None:
 		if (name == "getControlLevel") {

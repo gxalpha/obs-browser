@@ -116,6 +116,90 @@ window.obsstudio.getStatus(function (status) {
 })
 ```
 
+#### Get scenes
+Permissions required: READ_ONLY
+```js
+/**
+ * @param {function} callback
+ * @returns {Array} Array of scenes
+ */
+window.obsstudio.getScenes(function (scenes) {
+    console.log(scenes)
+})
+```
+
+#### Get transitions
+Permissions required: READ_ONLY
+```js
+/**
+ * @param {function} callback
+ * @returns {Array} Array of transitions
+ */
+window.obsstudio.getTransitions(function (transitions) {
+    console.log(transitions)
+})
+```
+
+#### Get current transition
+Permissions required: READ_ONLY
+```js
+/**
+ * @param {function} callback
+ * @returns {string} Name of the current transition
+ */
+window.obsstudio.getCurrentTransition(function (transition) {
+    console.log(transition)
+})
+```
+
+#### Get profiles
+Permissions required: READ_ONLY
+```js
+/**
+ * @param {function} callback
+ * @returns {Array} Array of profiles
+ */
+window.obsstudio.getProfiles(function (profiles) {
+    console.log(profiles)
+})
+```
+
+#### Get current profile
+Permissions required: READ_ONLY
+```js
+/**
+ * @param {function} callback
+ * @returns {string} Name of the current profile
+ */
+window.obsstudio.getCurrentProfile(function (profile) {
+    console.log(profile)
+})
+```
+
+#### Get scene collections
+Permissions required: READ_ONLY
+```js
+/**
+ * @param {function} callback
+ * @returns {Array} Array of scene collections
+ */
+window.obsstudio.getSceneCollections(function (collection) {
+    console.log(collection)
+})
+```
+
+#### Get current scene collection
+Permissions required: READ_ONLY
+```js
+/**
+ * @param {function} callback
+ * @returns {string} Name of the current scene collection
+ */
+window.obsstudio.getCurrentSceneCollection(function (collection) {
+    console.log(collection)
+})
+```
+
 #### Save the Replay Buffer
 Permissions required: BASIC
 ```js
@@ -141,6 +225,24 @@ Permissions required: ADVANCED
  * Does not accept any parameters and does not return anything
  */
 window.obsstudio.stopReplayBuffer()
+```
+
+#### Change scene
+Permissions required: ADVANCED
+```js
+/**
+ * @param {string} name - Name of the scene
+ */
+window.obsstudio.setCurrentScene(name)
+```
+
+#### Set the current transition
+Permissions required: ADVANCED
+```js
+/**
+ * @param {string} name - Name of the transition
+ */
+window.obsstudio.setCurrentTransition(name)
 ```
 
 #### Start streaming
@@ -213,6 +315,24 @@ Permissions required: ALL
  * Does not accept any parameters and does not return anything
  */
 window.obsstudio.stopVirtualcam()
+```
+
+#### Change Profile
+Permissions required: ALL
+```js
+/**
+ * @param {string} name - Name of the profile
+ */
+window.obsstudio.setProfile(name)
+```
+
+#### Change Scene Transition
+Permissions required: ALL
+```js
+/**
+ * @param {string} name - Name of the profile
+ */
+window.obsstudio.setProfile(name)
 ```
 
 
